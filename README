@@ -1,61 +1,48 @@
-# Simple Platformer Game (Python PgZero)
+# Granja de Patos API
 
-Este é um jogo de plataforma simples criado usando a biblioteca PgZero para Python. O objetivo deste projeto era demonstrar os conceitos básicos de desenvolvimento de jogos 2D, incluindo movimentação de personagens, animação de sprites, interação com o cenário (plataformas), inimigos e áudio (música de fundo e efeitos sonoros), tudo dentro das limitações de bibliotecas especificadas.
+Bem-vindo à API de gerenciamento da Granja de Patos! Esta API permite controlar o cadastro de patos, vendas para clientes e geração de relatórios detalhados. Você pode usar essa aplicação para administrar uma granja de patos de forma eficiente e moderna.
 
-## Funcionalidades
+## Funcionalidades Principais
 
-* **Menu Principal:** Com opções para iniciar o jogo, ligar/desligar a música e sair.
-* **Controle do Herói:** Movimentação para a esquerda e direita, e pulo.
-* **Plataformas:** Cenário estático onde o herói pode andar e pular.
-* **Inimigos:** Entidades que se movem em seus territórios e causam "Game Over" ao contato com o herói.
-* **Animação de Sprite:** Animação básica para o herói ao se mover e ficar parado, e animação de placeholder para os inimigos.
-* **Música e Sons:** Música de fundo e efeitos sonoros para pulo e game over, com uma opção para controlar a música no menu.
+- **Cadastro de Patos:** Registre novos patos na granja, incluindo detalhes como nome, raça, idade, sexo e informações sobre a mãe.
 
-## Como Executar o Jogo
+- **Venda de Patos:** Realize vendas de patos para clientes cadastrados, aplicando descontos automaticamente com base no tipo de cliente.
 
-1.  **Pré-requisitos:** Certifique-se de ter o Python instalado no seu sistema. Além disso, você precisará ter a biblioteca PgZero instalada. Você pode instalá-la usando pip:
-    ```bash
-    pip install pgzero
-    ```
-    Você também precisará da biblioteca Pygame instalada (geralmente instalada com o PgZero):
-    ```bash
-    pip install pygame
-    ```
-2.  **Baixe os arquivos do jogo:** Faça o download do arquivo `main.py` e quaisquer arquivos de imagem e áudio (sprites do herói, inimigos, plataforma, música de fundo, efeitos sonoros) para a mesma pasta.
-3.  **Execute o jogo:** Abra o terminal ou prompt de comando, navegue até a pasta onde você salvou os arquivos e execute o seguinte comando:
-    ```bash
-    python main.py
-    ```
+- **Geração de Relatórios:** Crie relatórios completos em formato Excel ou PDF para acompanhar o status da granja, detalhes das vendas e informações sobre os clientes.
 
-## Controles
+## Tecnologias Utilizadas
 
-No menu principal:
+- Java
+- IntelliJ IDE
+- Spring Boot
+- PostgreSQL (Banco de Dados)
+- Flyway (Script de migração do banco de dados)
+- Postman ( Para testar APIs e permite enviar requisições HTTP)
+- Docker
+- Maven
+- Swagger (Documentação e Teste da API)
+- JUnit e Mockito (Testes Unitários)
+- Apache POI (Geração de Relatórios em Excel)
+- Apache PDFBox (Geração de Relatórios em PDF)
 
-* **Clique com o mouse** nos botões para interagir.
+## Pré-requisitos
 
-No jogo:
+Antes de começar, verifique se você possui as seguintes ferramentas instaladas:
 
-* **Setas esquerda/direita** ou **A/D:** Mover o herói para a esquerda ou direita.
-* **Barra de espaço:** Fazer o herói pular (apenas quando estiver no chão).
+- Java 8+ instalado
+- Maven
+- Docker (opcional, para executar via contêiner)
 
-## Recursos Utilizados
+## Uso
+- Utilize o Swagger para explorar e interagir com os endpoints da API.
+- Use ferramentas como Postman ou cURL para testar as operações de cadastro, vendas e geração de relatórios.
+  
+## Contribuição
+  Contribuições são bem-vindas! Se deseja contribuir com o projeto, siga estas etapas:
 
-* **PgZero:** A biblioteca principal usada para criar a estrutura do jogo.
-* **Pygame:** Usado para a classe `Rect` para colisões e para funcionalidades de áudio.
-* **random:** Usado para qualquer elemento aleatório (atualmente não muito utilizado, mas importado).
-
-## Notas de Desenvolvimento
-
-Este jogo foi criado como um projeto simples para demonstrar os fundamentos do desenvolvimento de jogos de plataforma com PgZero. O código é estruturado com classes para o herói e os inimigos, e funções para a lógica do jogo e o menu principal. A animação de sprite é implementada trocando as imagens do ator em um ciclo. A detecção de colisão é feita usando a classe `Rect` do Pygame. O áudio é gerenciado pelas funcionalidades de música e som do PgZero/Pygame.
-
-## Próximos Passos (Ideias para Expansão)
-
-* Melhorar as animações dos sprites com mais quadros.
-* Adicionar diferentes tipos de inimigos com comportamentos variados.
-* Implementar um sistema de pontuação ou coleta de itens.
-* Criar múltiplos níveis ou um sistema de transição entre eles.
-* Melhorar os gráficos e o design do cenário.
-
-## Autor
-
-[Wendrews L Botelho]
+- Faça um fork do repositório e clone em sua máquina local.
+- Crie uma branch para sua nova feature (git checkout -b feature/nova-feature).
+- Implemente suas alterações e teste-as localmente.
+- Faça commit das alterações (git commit -am 'Adiciona nova feature').
+- Faça push para o branch (git push origin feature/nova-feature).
+- Abra um Pull Request no repositório original.
