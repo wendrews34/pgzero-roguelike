@@ -1,1 +1,61 @@
-# Projetos Desenvolvidos sobre Banco de Dados
+# Simple Platformer Game (Python PgZero)
+
+Este é um jogo de plataforma simples criado usando a biblioteca PgZero para Python. O objetivo deste projeto era demonstrar os conceitos básicos de desenvolvimento de jogos 2D, incluindo movimentação de personagens, animação de sprites, interação com o cenário (plataformas), inimigos e áudio (música de fundo e efeitos sonoros), tudo dentro das limitações de bibliotecas especificadas.
+
+## Funcionalidades
+
+* **Menu Principal:** Com opções para iniciar o jogo, ligar/desligar a música e sair.
+* **Controle do Herói:** Movimentação para a esquerda e direita, e pulo.
+* **Plataformas:** Cenário estático onde o herói pode andar e pular.
+* **Inimigos:** Entidades que se movem em seus territórios e causam "Game Over" ao contato com o herói.
+* **Animação de Sprite:** Animação básica para o herói ao se mover e ficar parado, e animação de placeholder para os inimigos.
+* **Música e Sons:** Música de fundo e efeitos sonoros para pulo e game over, com uma opção para controlar a música no menu.
+
+## Como Executar o Jogo
+
+1.  **Pré-requisitos:** Certifique-se de ter o Python instalado no seu sistema. Além disso, você precisará ter a biblioteca PgZero instalada. Você pode instalá-la usando pip:
+    ```bash
+    pip install pgzero
+    ```
+    Você também precisará da biblioteca Pygame instalada (geralmente instalada com o PgZero):
+    ```bash
+    pip install pygame
+    ```
+2.  **Baixe os arquivos do jogo:** Faça o download do arquivo `main.py` e quaisquer arquivos de imagem e áudio (sprites do herói, inimigos, plataforma, música de fundo, efeitos sonoros) para a mesma pasta.
+3.  **Execute o jogo:** Abra o terminal ou prompt de comando, navegue até a pasta onde você salvou os arquivos e execute o seguinte comando:
+    ```bash
+    python main.py
+    ```
+
+## Controles
+
+No menu principal:
+
+* **Clique com o mouse** nos botões para interagir.
+
+No jogo:
+
+* **Setas esquerda/direita** ou **A/D:** Mover o herói para a esquerda ou direita.
+* **Barra de espaço:** Fazer o herói pular (apenas quando estiver no chão).
+
+## Recursos Utilizados
+
+* **PgZero:** A biblioteca principal usada para criar a estrutura do jogo.
+* **Pygame:** Usado para a classe `Rect` para colisões e para funcionalidades de áudio.
+* **random:** Usado para qualquer elemento aleatório (atualmente não muito utilizado, mas importado).
+
+## Notas de Desenvolvimento
+
+Este jogo foi criado como um projeto simples para demonstrar os fundamentos do desenvolvimento de jogos de plataforma com PgZero. O código é estruturado com classes para o herói e os inimigos, e funções para a lógica do jogo e o menu principal. A animação de sprite é implementada trocando as imagens do ator em um ciclo. A detecção de colisão é feita usando a classe `Rect` do Pygame. O áudio é gerenciado pelas funcionalidades de música e som do PgZero/Pygame.
+
+## Próximos Passos (Ideias para Expansão)
+
+* Melhorar as animações dos sprites com mais quadros.
+* Adicionar diferentes tipos de inimigos com comportamentos variados.
+* Implementar um sistema de pontuação ou coleta de itens.
+* Criar múltiplos níveis ou um sistema de transição entre eles.
+* Melhorar os gráficos e o design do cenário.
+
+## Autor
+
+[Wendrews L Botelho]
