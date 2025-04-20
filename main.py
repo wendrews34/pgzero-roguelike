@@ -1,222 +1,232 @@
 import pgzrun
+import pygame
+from pygame import Rect
 import random
-import math
-from pygame.rect import Rect
+import sys
 
-# Configurações do jogo
+# Configurações da tela
 WIDTH = 800
 HEIGHT = 600
-TILE_SIZE = 40
+GRAVITY = 1  # Simulação simples de gravidade
 
-# Cores
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-GRAY = (100, 100, 100)
-RED = (255, 0, 0)
-
-# Menu Principal
-menu_active = True
-start_button = Rect(WIDTH // 2 - 100, HEIGHT // 2 - 50, 200, 50)
-music_button = Rect(WIDTH // 2 - 100, HEIGHT // 2 + 20, 200, 50)
-exit_button = Rect(WIDTH // 2 - 100, HEIGHT // 2 + 90, 200, 50)
-music_on = True
-
-# Jogo
-game_active = False
-player = None
-enemies = []
-treasure = None
-map_data = []
-level = 1
-items = []
-game_over = False
-victory = False
-
-# Sons
-music.play("dungeon")
-
-# Classes
-class Entity(Actor):
-    def __init__(self, image, pos, speed):
-        super().__init__(image, pos)
-        self.speed = speed
-        self.frame = 0
+class Hero(Actor):
+    def __init__(self, pos):
+        super().__init__("hero_idle_0", pos=pos) # Imagem inicial
+        self.images_idle = ["hero_idle_0", "hero_idle_1"] # Lista de sprites para animação ociosa
+        self.images_move = ["hero_move_0", "hero_move_1"] # Lista de sprites para animação de movimento
         self.animation_timer = 0
-
-    def animate(self, images, duration):
-        self.animation_timer += 1
-        if self.animation_timer > duration:
-            self.frame = (self.frame + 1) % len(images)
-            self.image = images[self.frame]
-            self.animation_timer = 0
-
-class Player(Entity):
-    def __init__(self, pos):
-        super().__init__("explorer0", pos, 5)
-        self.images = ["explorer0", "explorer1", "explorer2", "explorer3"]
-        self.power = 1
-
-    def move(self, dx, dy):
-        new_x = self.x + dx * self.speed
-        new_y = self.y + dy * self.speed
-        if is_valid_position(new_x, new_y):
-            self.x = new_x
-            self.y = new_y
-            self.animate(self.images, 5)
-
-class Enemy(Entity):
-    def __init__(self, pos):
-        super().__init__("enemy0", pos, 3)
-        self.images = ["enemy0", "enemy1", "enemy2", "enemy3"]
-        self.direction = random.choice([(1, 0), (-1, 0), (0, 1), (0, -1)])
+        self.animation_speed = 5 # Controla a velocidade da animação (quantos frames por troca de sprite)
+        self.current_animation = "idle"
+        self.frame_index = 0
+        self.velocity_y = 0
+        self.facing_right = True
+        self.vx = 0
 
     def update(self):
-        dx, dy = self.direction
-        new_x = self.x + dx * self.speed
-        new_y = self.y + dy * self.speed
-        if is_valid_position(new_x, new_y):
-            self.x = new_x
-            self.y = new_y
-            self.animate(self.images, 10)
+        self.animate()
+        self.apply_gravity()
+        self.move_and_collide(platforms)
+
+    def animate(self):
+        if self.current_animation == "idle":
+            images = self.images_idle
+        elif self.current_animation == "move":
+            images = self.images_move
+
+        if self.animation_timer > self.animation_speed:
+            self.frame_index = (self.frame_index + 1) % len(images)
+            self.image = images[self.frame_index]
+            self.animation_timer = 0
         else:
-            self.direction = random.choice([(1, 0), (-1, 0), (0, 1), (0, -1)])
+            self.animation_timer += 1
 
-class FastEnemy(Enemy):
-    def __init__(self, pos):
-        super().__init__(pos)
-        self.speed = 6
-        self.image = "fast_enemy0"
-        self.images = ["fast_enemy0", "fast_enemy1", "fast_enemy2", "fast_enemy3"]
+    def move(self, direction):
+        if direction == "left":
+            self.vx = -5
+            self.current_animation = "move"
+            self.facing_right = False
+        elif direction == "right":
+            self.vx = 5
+            self.current_animation = "move"
+            self.facing_right = True
+        elif direction == "idle":
+            self.vx = 0
+            self.current_animation = "idle"
 
-class Item(Actor):
-    def __init__(self, image, pos):
-        super().__init__(image, pos)
+    def jump(self):
+        if self.velocity_y == 0:
+            self.velocity_y = -15 # Força do salto
+            sounds.jump.play()
 
-# Funções do jogo
-def generate_map():
-    global map_data
-    map_data = [[1 for _ in range(WIDTH // TILE_SIZE)] for _ in range(HEIGHT // TILE_SIZE)]
-    for _ in range(50 + level * 10):
-        x = random.randint(1, WIDTH // TILE_SIZE - 2)
-        y = random.randint(1, HEIGHT // TILE_SIZE - 2)
-        map_data[y][x] = 0
+    def apply_gravity(self):
+        self.velocity_y += GRAVITY
+        self.y += self.velocity_y
 
-def place_entities():
-    global player, enemies, treasure, items
-    player_pos = find_empty_tile()
-    player = Player(player_pos)
-    treasure_pos = find_empty_tile()
-    treasure = Actor("treasure", treasure_pos)
-    enemies = [Enemy(find_empty_tile()) for _ in range(3 + level)]
-    enemies.extend([FastEnemy(find_empty_tile()) for _ in range(level)])
-    items = [Item("potion", find_empty_tile()) for _ in range(level)]
+    def move_and_collide(self, platforms):
+        self.y += self.velocity_y
+        on_ground = False
+        for platform in platforms:
+            if self.colliderect(platform):
+                if self.velocity_y > 0:
+                    self.bottom = platform.top
+                    self.velocity_y = 0
+                    on_ground = True
+                elif self.velocity_y < 0:
+                    self.top = platform.bottom
+                    self.velocity_y = 0
+        if not on_ground:
+            self.current_animation = "idle" # Podemos mudar para uma animação de "caindo" depois
+        self.x += self.vx
+        # Manter o herói dentro dos limites da tela (opcional)
+        if self.left < 0:
+            self.left = 0
+        elif self.right > WIDTH:
+            self.right = WIDTH
 
-def find_empty_tile():
-    while True:
-        x = random.randint(0, WIDTH // TILE_SIZE - 1)
-        y = random.randint(0, HEIGHT // TILE_SIZE - 1)
-        if map_data[y][x] == 0:
-            return (x * TILE_SIZE + TILE_SIZE // 2, y * TILE_SIZE + TILE_SIZE // 2)
+class Enemy(Actor):
+    def __init__(self, pos, left_boundary, right_boundary):
+        super().__init__("enemy_idle_0", pos=pos) # Placeholder image
+        self.left_boundary = left_boundary
+        self.right_boundary = right_boundary
+        self.speed = 2
+        self.moving_right = True
+        self.images_idle = ["enemy_idle_0", "enemy_idle_1"] # Placeholder images
+        self.animation_timer = 0
+        self.animation_speed = 10
+        self.frame_index = 0
 
-def is_valid_position(x, y):
-    grid_x = int(x // TILE_SIZE)
-    grid_y = int(y // TILE_SIZE)
-    return 0 <= grid_x < WIDTH // TILE_SIZE and 0 <= grid_y < HEIGHT // TILE_SIZE and map_data[grid_y][grid_x] == 0
+    def update(self):
+        self.move()
+        self.animate()
 
-def draw_map():
-    for y, row in enumerate(map_data):
-        for x, tile in enumerate(row):
-            if tile == 1:
-                screen.blit("wall", (x * TILE_SIZE, y * TILE_SIZE))
+    def move(self):
+        if self.moving_right:
+            self.x += self.speed
+            if self.right > self.right_boundary:
+                self.moving_right = False
+        else:
+            self.x -= self.speed
+            if self.left < self.left_boundary:
+                self.moving_right = True
 
-def draw_menu():
-    screen.fill(BLACK)
-    screen.draw.text("Roguelike Game", center=(WIDTH // 2, HEIGHT // 4), color=WHITE, fontsize=60)
-    screen.draw.filled_rect(start_button, GRAY)
-    screen.draw.text("Start", center=start_button.center, color=WHITE, fontsize=30)
-    screen.draw.filled_rect(music_button, GRAY)
-    screen.draw.text("Music: " + ("On" if music_on else "Off"), center=music_button.center, color=WHITE, fontsize=30)
-    screen.draw.filled_rect(exit_button, GRAY)
-    screen.draw.text("Exit", center=exit_button.center, color=WHITE, fontsize=30)
+    def animate(self):
+        if self.animation_timer > self.animation_speed:
+            self.frame_index = (self.frame_index + 1) % len(self.images_idle)
+            self.image = self.images_idle[self.frame_index]
+            self.animation_timer = 0
+        else:
+            self.animation_timer += 1
 
-def draw_game():
-    draw_map()
-    player.draw()
-    treasure.draw()
-    for enemy in enemies:
-        enemy.draw()
-    for item in items:
-        item.draw()
+# Criação do herói
+hero = Hero((WIDTH // 2, HEIGHT - 50))
 
-def draw_game_over():
-    screen.fill(BLACK)
-    if victory:
-        screen.draw.text("Victory!", center=(WIDTH // 2, HEIGHT // 2), color=WHITE, fontsize=60)
-    else:
-        screen.draw.text("Game Over", center=(WIDTH // 2, HEIGHT // 2), color=RED, fontsize=60)
+# Criação das plataformas
+platforms = [
+    Rect(50, HEIGHT - 30, 200, 30),      # Plataforma no canto inferior esquerdo
+    Rect(300, HEIGHT - 100, 300, 30),     # Plataforma no meio
+    Rect(650, HEIGHT - 50, 100, 50),      # Pequena plataforma à direita
+    Rect(0, HEIGHT - 20, WIDTH, 20)       # Chão
+]
 
-def update():
-    global game_over, victory, level
-    if game_active:
-        for enemy in enemies:
-            enemy.update()
-            if player.colliderect(enemy):
-                game_over = True
-        for item in items:
-            if player.colliderect(item):
-                player.power += 1
-                items.remove(item)
-        if player.colliderect(treasure):
-            level += 1
-            if level > 3:
-                game_over = True
-                victory = True
-            else:
-                generate_map()
-                place_entities()
+# Criação dos inimigos
+enemies = [
+    Enemy((150, HEIGHT - 60), 100, 250), # Inimigo na primeira plataforma
+    Enemy((450, HEIGHT - 130), 350, 550) # Inimigo na plataforma do meio
+]
 
-def on_mouse_down(pos):
-    global menu_active, game_active, music_on, game_over, victory, level
-    if menu_active:
-        if start_button.collidepoint(pos):
-            menu_active = False
-            game_active = True
-            generate_map()
-            place_entities()
-        elif music_button.collidepoint(pos):
-            music_on = not music_on
-            if music_on:
-                music.unpause()
-            else:
-                music.pause()
-        elif exit_button.collidepoint(pos):
-            exit()
-    elif game_over:
-        game_over = False
-        victory = False
-        level = 1
-        game_active = True
-        generate_map()
-        place_entities()
+# Estado do jogo
+game_state = "menu"
+music_enabled = True
 
-def on_key_down(key):
-    if game_active and not game_over:
-        if key == keys.W:
-            player.move(0, -1)
-        elif key == keys.S:
-            player.move(0, 1)
-        elif key == keys.A:
-            player.move(-1, 0)
-        elif key == keys.D:
-            player.move(1, 0)
+# Carregar música e sons
+music.play("background_music")
+music.set_volume(0.5) # Define um volume inicial (opcional)
+sounds.jump = pygame.mixer.Sound("jump.wav")
+sounds.game_over = pygame.mixer.Sound("game_over.wav")
+
+# Criação dos botões do menu
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+class Button:
+    def __init__(self, x, y, width, height, text):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.font = pygame.font.Font(None, 30)
+        self.text_surface = self.font.render(text, True, BLACK)
+        self.text_rect = self.text_surface.get_rect(center=self.rect.center)
+
+    def draw(self):
+        screen.draw.rect(self.rect, WHITE)
+        screen.blit(self.text_surface, self.text_rect)
+
+    def is_clicked(self):
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_clicked = pygame.mouse.get_pressed()[0]
+        return self.rect.collidepoint(mouse_pos) and mouse_clicked
+
+button_start = Button(WIDTH // 2 - 100, HEIGHT // 2 - 50, 200, 40, "Iniciar Jogo")
+button_music_text = "Música (Ligada)" if music_enabled else "Música (Desligada)"
+button_music = Button(WIDTH // 2 - 100, HEIGHT // 2 + 10, 200, 40, button_music_text)
+button_quit = Button(WIDTH // 2 - 100, HEIGHT // 2 + 70, 200, 40, "Sair")
 
 def draw():
-    if menu_active:
-        draw_menu()
-    elif game_active:
-        if not game_over:
-            draw_game()
-        else:
-            draw_game_over()
+    screen.fill(BLACK)
+    if game_state == "menu":
+        button_start.draw()
+        button_music.draw()
+        button_quit.draw()
+    elif game_state == "game":
+        hero.draw()
+        for platform in platforms:
+            screen.draw.rect(platform, (100, 100, 100))
+        for enemy in enemies:
+            enemy.draw()
+    elif game_state == "game_over":
+        screen.draw.text("Game Over!", center=(WIDTH // 2, HEIGHT // 2), color=WHITE, fontsize=60)
 
+def update():
+    global game_state, music_enabled
+    if game_state == "game":
+        hero.update()
+        for enemy in enemies:
+            enemy.update()
+            if hero.colliderect(enemy):
+                game_state = "game_over"
+                sounds.game_over.play()
+    elif game_state == "menu":
+        if music_enabled and not music.is_playing:
+            music.play("background_music")
+        elif not music_enabled and music.is_playing:
+            music.stop()
+
+def on_key_down(key):
+    global game_state
+    if game_state == "game":
+        if key == pygame.K_SPACE:
+            hero.jump()
+
+def on_key_up(key):
+    if game_state == "game":
+        hero.move("idle")
+
+def on_mouse_down(pos):
+    global game_state, music_enabled, button_music
+    if game_state == "menu":
+        if button_start.is_clicked():
+            game_state = "game"
+            if music_enabled and not music.is_playing:
+                music.play("background_music")
+        elif button_music.is_clicked():
+            music_enabled = not music_enabled
+            button_music_text = f"Música ({'Ligada' if music_enabled else 'Desligada'})"
+            button_music = Button(WIDTH // 2 - 100, HEIGHT // 2 + 10, 200, 40, button_music_text)
+            if music_enabled and not music.is_playing:
+                music.play("background_music")
+            else:
+                music.stop()
+        elif button_quit.is_clicked():
+            sys.exit()
+    elif game_state == "game_over":
+        pass
 pgzrun.go()
